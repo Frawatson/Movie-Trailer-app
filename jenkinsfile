@@ -2,12 +2,9 @@ pipeline{
     agent any
     tools{
         jdk 'jdk17'
-        nodejs 'node16'
     }
     environment {
         DOCKERHUB_CREDENTIALS=credentials('docker-cred')
-        KUBERNETES_CREDENTIALS=credentials('kubeconfig')
-        SCANNER_HOME=tool 'sonar-scanner'
     }
     stages {
         stage('clean workspace'){
@@ -17,7 +14,7 @@ pipeline{
         }
         stage('Checkout from Git'){
             steps{
-                git branch: 'master', url: 'https://github.com/Frawatson/amazonclone.git'
+                git branch: 'main', url: 'https://github.com/Frawatson/Movie-Trailer-app.git'
             }
         }
         stage("Docker Build and Tag"){
