@@ -1,23 +1,23 @@
 # Stage 1: Build React Frontend
 FROM node:alpine AS frontend-build
 WORKDIR /app
-COPY frontend/package.json frontend/package-lock.json ./
+COPY package*.json ./
 RUN npm install
-COPY frontend ./
+COPY . .
 RUN npm run build
 
 # Stage 2: Build Java Backend
 FROM maven:alpine AS backend-build
 WORKDIR /app
-COPY backend/pom.xml ./
+COPY pom.xml ./
 RUN mvn dependency:go-offline
-COPY backend/src ./src
+COPY src ./src
 RUN mvn package
 
 # Stage 3: Final Image
 FROM openjdk:11-jre-slim
 WORKDIR /app
-COPY --from=backend-build /app/target/your-backend.jar ./backend.jar
+COPY --from=backend-build /app/target/Sapey*.jar ./backend.jar
 COPY --from=frontend-build /app/build ./frontend/build
 
 # Expose ports

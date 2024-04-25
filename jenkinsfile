@@ -1,0 +1,42 @@
+pipeline{
+    agent any
+    tools{
+        jdk 'jdk17'
+        nodejs 'node16'
+    }
+    environment {
+        DOCKERHUB_CREDENTIALS=credentials('docker-cred')
+        KUBERNETES_CREDENTIALS=credentials('kubeconfig')
+        SCANNER_HOME=tool 'sonar-scanner'
+    }
+    stages {
+        stage('clean workspace'){
+            steps{
+                cleanWs()
+            }
+        }
+        stage('Checkout from Git'){
+            steps{
+                git branch: 'master', url: 'https://github.com/Frawatson/amazonclone.git'
+            }
+        }
+        stage("Docker Build and Tag"){
+            steps{
+                script{
+                    sh "docker build -t sapey-trailer ."
+                    sh "docker tag sapey-trailer frawatson/sapey-trailer:latest "
+                    sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+                }
+            }
+        }
+        stage ('Docker Push') {
+            steps{
+                script {
+                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
+                        sh "docker push frawatson/sapey-trailer:latest"
+                    }
+                }
+            }
+        }
+    }
+}
